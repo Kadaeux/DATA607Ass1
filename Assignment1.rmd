@@ -1,0 +1,130 @@
+---
+title: "DATA607 Assignment 1"
+author: "Nicholas Kunze"
+output:
+  html_document:
+    highlight: pygments
+    theme: cerulean
+    toc: true
+    toc_float: true
+  pdf_document: default
+editor_options: 
+  chunk_output_type: console
+---
+
+# DATA607 Assignment 1
+
+## What The World Thinks Of Trump
+
+*Nicholas Kunze*
+
+```{r global_options, include=FALSE}
+if("devtools" %in% rownames(installed.packages()) == FALSE) {install.packages("devtools")}
+if("RCurl" %in% rownames(installed.packages()) == FALSE) {install.packages("RCurl")}
+if("tidyverse" %in% rownames(installed.packages()) == FALSE) {install.packages("tidyverse")}
+
+library(devtools)
+library(RCurl)
+library(tidyverse)
+```
+
+### Overview
+
+["What The World Thinks Of Trump" by FiveThirtyEight](https://fivethirtyeight.com/features/what-the-world-thinks-of-trump/) uses Pew Research Center data to attempt to glean insight into global opinion about the United States and our Presidents since 2000, specifically Donald Trump who had just been in office for 9 months when this was originally published. 1,000 residents of a number of countries were asked about their opinion on a number of Trumps' policies, their opinion of the US (done yearly), and their confidence that the US President will "do the right thing regarding world affairs."
+
+### Data Extraction
+
+First things first, let's import our data. There's different ways to handle this. For this assignment, I've included the datasets in the git repo itself, though this is not always possible or prudent. We have a number of delimited text files, csvs, each with countries' populations' opinions on the US and the President of the US over multiple years as well as specific policies during Trump's presidency.
+
+```{r data-extraction}
+wclimate <- read.csv("datasets/TRUMPWORLD-issue-1.csv")
+borderwall <- read.csv("datasets/TRUMPWORLD-issue-2.csv")
+wirannuke <- read.csv("datasets/TRUMPWORLD-issue-3.csv")
+wtradeagr <- read.csv("datasets/TRUMPWORLD-issue-4.csv")
+muslimimgtn <- read.csv("datasets/TRUMPWORLD-issue-5.csv")
+us <- read.csv("datasets/TRUMPWORLD-us.csv")
+pres <- read.csv("datasets/TRUMPWORLD-pres.csv")
+is.data.frame(borderwall)
+head(borderwall)
+head(us)
+```
+
+Alright so we've got our data. However, some headers are ambiguous or just not pretty. Let's rename avg to something more appropriate and prettify what we can. I handle all of the issues in a loop to improve readability and make changes in the future easier.
+
+```{r rename-header}
+names(us)[names(us) == 'avg'] <- 'Global_Average'
+names(us)[names(us) == 'year'] <- 'Year'
+names(us)
+names(pres)[names(pres) == 'avg'] <- 'Global_Average'
+names(pres)[names(pres) == 'year'] <- 'Year'
+names(pres)
+
+for(df in c("borderwall", "muslimimgtn", "wclimate", "wirannuke", "wtradeagr"))
+  data.table::setnames(get(df),  c("Country", "Net_Approval", "Approves", "Disapproves", "DontKnow_NoResponse"))
+
+names(borderwall)
+```
+
+I wonder how these countries felt about the border wall... (approval ranges from -100 to 100)
+
+```{r border-wall-approval}
+mean(borderwall$Net_Approval)
+median(borderwall$Net_Approval)
+```
+
+Oof, that's not great. Well, let's see if this is just nations disliking the US in general... (approval ranges from 0 to 100)
+
+```{r us-approval}
+ggplot(data = us, aes(x = Year, y = Global_Average)) + geom_line()
+```
+
+No, there doesn't appear to be a single trend in this chart. Maybe these are tied to international confidence in the President.
+
+```{r pres-approval}
+ggplot(data = pres, aes(x = Year, y = Global_Average)) + geom_line()
+```
+
+The President's global trust does appear to be a similar shape as the US global approval. However, Presidential trust appears to be more volatile and open to change than US approval.
+
+### Data Subset Selection - Presidencies
+
+Let's get opinion data about the US for the last years of Obama and Trump's first year.
+
+```{r subset-us}
+range(us['Year'], na.rm=TRUE)
+us2013plus <- subset(us, Year > 2013)
+ggplot(data = us2013plus, aes(x = Year, y = Global_Average)) + geom_line()
+```
+
+And now trust in the President...
+
+```{r subset-pres}
+range(pres['Year'], na.rm=TRUE)
+pres2013plus <- subset(pres, Year > 2013)
+ggplot(data = pres2013plus, aes(x = Year, y = Global_Average)) + geom_line()
+```
+
+It does appear that since Trump has taken office, trust in both the United States and its President have dropped by a large amount. In fact, this might be the lowest trust in the President seen in this entire data set...
+
+```{r pres-min-year}
+pres$Year[pres$Global_Average == min(pres['Global_Average'])]
+pres[order(pres$Global_Average, decreasing = FALSE),]
+
+```
+
+Nope! Getting close, though. Maybe his policies he's pushing for will get the US some good will. We already saw that the border wall was unpopular internationally, but that may be an outlier.
+
+```{r issues-plot}
+issues <- data.frame(
+  Issue = c("Border Wall", "Block Muslim Immigration", "Climate Accord Withdrawal", "Iran Deal Withdrawal", "Trade Withdrawal"),
+  Mean_Approval = c(mean(borderwall$Net_Approval), mean(muslimimgtn$Net_Approval), mean(wclimate$Net_Approval), mean(wirannuke$Net_Approval), mean(wtradeagr$Net_Approval))
+)
+ggplot(data = issues, aes(x = Issue, y = Mean_Approval)) + geom_bar(stat='identity')
+```
+
+All policies appear to be disliked by the international community as a whole. The outlier here is actually the US withdrawal from the nuclear agreement with Iran, with an average global net approval of -15.7.
+
+
+### Conclusions
+
+Based on this data, it appears that the world appears to have disliked the former President Donald Trump, and his proposed policies, quite heavily during his first year in office. This is especially true when compared to Obama's terms, where approval for the US and trust in our President appears to mostly improve. At this time, it appears that the US was likely to gon a trend to be as unpopular as it was during Bush's presidencies, where we saw the lowest approval ratings in our analysis above.
