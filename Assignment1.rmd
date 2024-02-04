@@ -34,16 +34,16 @@ library(tidyverse)
 
 ### Data Extraction
 
-First things first, let's import our data. There's different ways to handle this. For this assignment, I've included the datasets in the git repo itself, though this is not always possible or prudent. We have a number of delimited text files, csvs, each with countries' populations' opinions on the US and the President of the US over multiple years as well as specific policies during Trump's presidency.
+First things first, let's import our data. There's different ways to handle this. For this assignment, I've pulled in our data from files hosted on a public git repository. We have a number of delimited text files, csvs, each with countries' populations' opinions on the US and the President of the US over multiple years as well as specific policies during Trump's presidency.
 
 ```{r data-extraction}
-wclimate <- read.csv("datasets/TRUMPWORLD-issue-1.csv")
-borderwall <- read.csv("datasets/TRUMPWORLD-issue-2.csv")
-wirannuke <- read.csv("datasets/TRUMPWORLD-issue-3.csv")
-wtradeagr <- read.csv("datasets/TRUMPWORLD-issue-4.csv")
-muslimimgtn <- read.csv("datasets/TRUMPWORLD-issue-5.csv")
-us <- read.csv("datasets/TRUMPWORLD-us.csv")
-pres <- read.csv("datasets/TRUMPWORLD-pres.csv")
+wclimate <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/trump-world-trust/TRUMPWORLD-issue-1.csv")
+borderwall <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/trump-world-trust/TRUMPWORLD-issue-2.csv")
+wirannuke <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/trump-world-trust/TRUMPWORLD-issue-3.csv")
+wtradeagr <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/trump-world-trust/TRUMPWORLD-issue-4.csv")
+muslimimgtn <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/trump-world-trust/TRUMPWORLD-issue-5.csv")
+us <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/trump-world-trust/TRUMPWORLD-us.csv")
+pres <- read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/trump-world-trust/TRUMPWORLD-pres.csv")
 is.data.frame(borderwall)
 head(borderwall)
 head(us)
